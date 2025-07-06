@@ -785,7 +785,7 @@ namespace SNIFF
 						}
 						n.Add(strumTime);
 						n.Add(noteData);
-						n.Add(sustainTime);
+						if (sustainTime > 0) n.Add(sustainTime);
 						break;
 					default:
 						break;
@@ -803,7 +803,7 @@ namespace SNIFF
 			}
 
 			// post processing
-			if (holyShit.Count() > 0)
+			if (holyShit.Count > 0)
 			{
 				foreach (JToken loop in section)
 				{
@@ -976,10 +976,7 @@ namespace SNIFF
 							File.WriteAllBytes(saveBrowser.FileName, file);
 							dir = Path.GetDirectoryName(saveBrowser.FileName);
 						}
-					}
-
-					else
-					{
+					} else {
 						byte[] b = null;
 						Console.WriteLine("Reading file...");
 						try { b = File.ReadAllBytes(fileName); }
@@ -1038,7 +1035,8 @@ namespace SNIFF
 									saveBrowser.FileName += ".json";
 									if (saveBrowser.ShowDialog() == DialogResult.OK)
 									{
-										Console.WriteLine("Converting data to json string....");
+										Console.WriteLine("Converting & Writing data to json string....");
+										JsonWriter writer = new JsonTextWriter(new StringWriter()) { Formatting = doFormat ? Formatting.Indented : Formatting.None};
 										jsonOut = file.ToString(Formatting.None);
 										Console.WriteLine("Writing json file....");
 										try
