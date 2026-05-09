@@ -658,11 +658,11 @@ namespace SNIFF
 			Stopwatch sw = new Stopwatch();
 			sw.Start();
 			int roundDecimal = 3; // round to 3 decimal places
-			bool isDone = false;
+			bool isDone = false, input = false;
 			//int bufferCnt = 0;
 
 			Task.Run(() => {
-				while (!isDone)
+				while (!isDone || !input)
 				{
 					Console.Write($"\x1b[0GNotes: {progress} / {totalNotes} ({progress / (double)totalNotes:P3}) Section: {sectionCnt}");
 					Task.Delay(20);
@@ -741,6 +741,7 @@ namespace SNIFF
 							Globals.bpm = Globals.bpmList[bpmListIdx++];
 						else if (Globals.enableBPMList == -1)
 						{
+							input = true;
 							Console.WriteLine("\nNew BPM (ignore if blank): ");
 							string lineBPM = Console.ReadLine();
 							if (!string.IsNullOrWhiteSpace(lineBPM))
@@ -749,6 +750,7 @@ namespace SNIFF
 								Globals.bpm = daBPM;
 								Globals.bpmList.Add(daBPM);
 							}
+							input = false;
 						}
 
 						if (Globals.enableBPMList != 0) {
@@ -765,7 +767,8 @@ namespace SNIFF
 						};
 						break;
 					case (uint)MIDINotes.ALT_AN:
-						lastSection.Add("altAnim", true);
+						if (lastSection.ContainsKey("altAnim")) lastSection["altAnim"] = true;
+						else lastSection.Add("altAnim", true);
 						break;
 					case (uint)MIDINotes.BF_L:
 					case (uint)MIDINotes.BF_D:
@@ -946,9 +949,9 @@ namespace SNIFF
 
 			if (args.Length > 0 || fileBrowser.ShowDialog() == DialogResult.OK)
 			{
-				if (args.Length == 0)
-					args = fileBrowser.FileNames;
-				string dir = Path.GetDirectoryName(fileBrowser.FileName);
+				if (args.Length == 0) args = fileBrowser.FileNames;
+				
+				string dir = "";
 				foreach (string fileName in args)
 				{
 					if (fileName.EndsWith(".json"))
